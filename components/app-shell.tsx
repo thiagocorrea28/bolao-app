@@ -33,7 +33,7 @@ export function AppShell({
                   <span className="hidden sm:inline">Leaderboard</span>
                 </Link>
                 <Link
-                  className="btn-secondary border-amber-300/30 bg-amber-300/10 px-3 text-amber-100 hover:border-amber-300/70 hover:bg-amber-300/20"
+                  className="btn-premium"
                   href="/premium"
                 >
                   <Star size={18} />
