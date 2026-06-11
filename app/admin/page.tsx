@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarPlus, FileUp, RotateCcw, Trash2 } from "lucide-react";
+import { CalendarPlus, ChevronLeft, ChevronRight, FileUp, RotateCcw, Trash2 } from "lucide-react";
 import { AdminCollapsibleSection } from "@/components/admin-collapsible-section";
 import { AppShell } from "@/components/app-shell";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/server";
 import type { Match, Profile } from "@/lib/types";
+import { addDays, dayBounds, formatDateLabel, toDateInputValue } from "@/lib/utils";
 
 function datetimeLocalValue(iso: string) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -28,7 +30,11 @@ function datetimeLocalValue(iso: string) {
   return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
 }
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams
+}: {
+  searchParams: { date?: string };
+}) {
   const supabase = createClient();
   const {
     data: { user }
@@ -48,9 +54,16 @@ export default async function AdminPage() {
     redirect("/");
   }
 
+  const { date, start, end } = dayBounds(searchParams.date);
+  const dateValue = toDateInputValue(date);
+  const previousDate = toDateInputValue(addDays(date, -1));
+  const nextDate = toDateInputValue(addDays(date, 1));
+
   const { data: matches = [] } = await supabase
     .from("matches")
     .select("*")
+    .gte("starts_at", start)
+    .lt("starts_at", end)
     .order("starts_at", { ascending: true })
     .returns<Match[]>();
   const matchRows = matches ?? [];
@@ -69,9 +82,24 @@ export default async function AdminPage() {
 
   return (
     <AppShell profile={profile}>
-      <section className="mb-6">
-        <p className="text-sm font-bold uppercase tracking-wide text-mint">Super Admin</p>
-        <h1 className="mt-1 text-3xl font-black">Gerenciar jogos</h1>
+      <section className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-wide text-mint">Super Admin</p>
+          <h1 className="mt-1 text-3xl font-black">Gerenciar jogos</h1>
+          <p className="mt-1 text-sm capitalize text-ink/70">{formatDateLabel(date)}</p>
+        </div>
+
+        <div className="grid grid-cols-[auto_1fr_auto] gap-2 sm:w-auto">
+          <Link className="btn-secondary px-3" href={`/admin?date=${previousDate}`} title="Dia anterior">
+            <ChevronLeft size={18} />
+          </Link>
+          <Link className="btn-secondary" href="/admin">
+            Hoje
+          </Link>
+          <Link className="btn-secondary px-3" href={`/admin?date=${nextDate}`} title="Proximo dia">
+            <ChevronRight size={18} />
+          </Link>
+        </div>
       </section>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,.7fr)]">
@@ -242,6 +270,9 @@ export default async function AdminPage() {
             </div>
           </article>
         ))}
+        {matchRows.length === 0 ? (
+          <div className="surface p-8 text-center text-ink/70">Nenhum jogo cadastrado para este dia.</div>
+        ) : null}
       </section>
     </AppShell>
   );
