@@ -15,7 +15,7 @@ export function AdminCollapsibleSection({
   const [open, setOpen] = useState(false);
 
   return (
-    <section className="surface p-4">
+    <section className="surface overflow-hidden p-4">
       <button
         className="flex w-full items-center justify-between gap-3 text-left lg:pointer-events-none"
         onClick={() => setOpen((current) => !current)}

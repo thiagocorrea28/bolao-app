@@ -5,15 +5,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        pitch: "#07110d",
-        grass: "#18a058",
-        mint: "#9ff0c5",
-        ink: "#e9fff4",
-        panel: "#101816",
-        line: "#26352f"
+        pitch: "#05080f",
+        grass: "#19b36b",
+        mint: "#a9f7d3",
+        ink: "#f7fbff",
+        panel: "#0d1420",
+        line: "#233044",
+        cupBlue: "#2f80ff",
+        cupRed: "#ef3340",
+        cupGold: "#f6c453",
+        stadium: "#111b2a"
       },
       boxShadow: {
-        glow: "0 0 0 1px rgba(159,240,197,.12), 0 18px 70px rgba(0,0,0,.32)"
+        glow: "0 0 0 1px rgba(47,128,255,.12), 0 18px 70px rgba(0,0,0,.34)",
+        cup: "0 18px 70px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.04)"
       }
     }
   },

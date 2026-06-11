@@ -46,10 +46,10 @@ export default async function PremiumPage() {
     return (
       <AppShell profile={profile}>
         <section className="mx-auto max-w-2xl">
-          <div className="surface border-amber-300/25 bg-amber-300/10 p-6">
-            <div className="mb-4 flex items-center gap-2 text-amber-100">
+          <div className="surface border-cupGold/25 bg-cupGold/10 p-6">
+            <div className="mb-4 flex items-center gap-2 text-cupGold">
               <Star size={22} />
-              <p className="text-sm font-bold uppercase tracking-wide">Bolao Premium</p>
+              <p className="text-sm font-bold uppercase tracking-wide">Bolão Premium</p>
             </div>
             <h1 className="text-3xl font-black">Entrar no Bolao Premium</h1>
             <p className="mt-4 text-ink/75">
@@ -59,7 +59,7 @@ export default async function PremiumPage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <form action={acceptPremium}>
-                <button className="btn-primary bg-amber-300 text-pitch hover:bg-amber-200">
+                <button className="btn-primary bg-cupGold text-pitch hover:bg-yellow-200">
                   <Star size={18} />
                   Aceito participar
                 </button>
@@ -116,7 +116,7 @@ export default async function PremiumPage() {
         <div>
           <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-amber-100">
             <Star size={17} />
-            Bolao Premium
+            Bolão Premium
           </p>
           <h1 className="mt-1 text-3xl font-black">Conta corrente premium</h1>
         </div>
@@ -124,10 +124,10 @@ export default async function PremiumPage() {
       </section>
 
       {!entry && profile.role === "super_admin" ? (
-        <section className="mb-6 surface border-amber-300/25 bg-amber-300/10 p-4">
+        <section className="mb-6 surface border-cupGold/25 bg-cupGold/10 p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-wide text-amber-100">
+              <p className="text-sm font-bold uppercase tracking-wide text-cupGold">
                 Participar como jogador
               </p>
               <p className="mt-1 text-sm text-ink/75">
@@ -135,7 +135,7 @@ export default async function PremiumPage() {
               </p>
             </div>
             <form action={acceptPremium}>
-              <button className="btn-primary bg-amber-300 text-pitch hover:bg-amber-200">
+              <button className="btn-primary bg-cupGold text-pitch hover:bg-yellow-200">
                 <Star size={18} />
                 Aceito participar
               </button>
@@ -147,8 +147,8 @@ export default async function PremiumPage() {
       {profile.role === "super_admin" ? (
         <section className="mb-6 grid gap-4 lg:grid-cols-[18rem_1fr]">
           <PremiumBalance label="Saldo total geral" value={totalBalance} />
-          <div className="surface overflow-hidden border-amber-300/20">
-            <div className="border-b border-line px-4 py-3 text-sm font-bold uppercase tracking-wide text-amber-100/75">
+          <div className="surface overflow-hidden border-cupGold/20">
+            <div className="border-b border-line px-4 py-3 text-sm font-bold uppercase tracking-wide text-cupGold/80">
               Saldos por jogador
             </div>
             <div className="divide-y divide-line">
@@ -179,12 +179,14 @@ export default async function PremiumPage() {
               : null;
 
           return (
-            <article className="surface border-amber-300/20 p-4" key={match.match_id}>
+            <article className="surface overflow-hidden border-cupGold/25" key={match.match_id}>
+              <div className="h-1 bg-gradient-to-r from-cupGold via-grass to-cupRed" />
+              <div className="p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-ink/60">
                     <span>{formatKickoff(match.starts_at)}</span>
-                    <span className="rounded bg-amber-300/10 px-2 py-1 text-amber-100">
+                    <span className="rounded bg-cupGold/10 px-2 py-1 text-cupGold">
                       {formatBidCountdown(match.bid_closes_at)}
                     </span>
                     {match.is_refunded ? (
@@ -200,7 +202,7 @@ export default async function PremiumPage() {
                   <span className="text-xs font-bold uppercase tracking-wide text-ink/60">Pote</span>
                   {match.is_refunded ? (
                     <>
-                      <span className="text-2xl font-black text-amber-100/45 line-through decoration-red-300 decoration-2">
+                    <span className="text-2xl font-black text-cupGold/50 line-through decoration-red-300 decoration-2">
                         {formatEuro(match.pot_amount)}
                       </span>
                       <span className="rounded-md border border-red-300/25 bg-red-500/10 px-2 py-1 text-xs font-black uppercase tracking-wide text-red-100">
@@ -208,7 +210,7 @@ export default async function PremiumPage() {
                       </span>
                     </>
                   ) : (
-                    <span className="text-2xl font-black text-amber-100">{formatEuro(match.pot_amount)}</span>
+                    <span className="text-2xl font-black text-cupGold">{formatEuro(match.pot_amount)}</span>
                   )}
                   <span className="text-xs text-ink/60">
                     {match.predictions_count} apostas · {match.winners_count} vencedores
@@ -217,7 +219,7 @@ export default async function PremiumPage() {
               </div>
 
               {prediction ? (
-                <div className="mt-4 rounded-md border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-sm text-amber-50">
+                <div className="mt-4 rounded-md border border-cupGold/25 bg-cupGold/10 px-3 py-2 text-sm text-amber-50">
                   Sua aposta premium:{" "}
                   <strong>
                     {prediction.home_score} x {prediction.away_score}
@@ -255,10 +257,11 @@ export default async function PremiumPage() {
                 <PremiumPredictionForm match={match} prediction={prediction} />
               ) : null}
 
-              <Link className="btn-secondary mt-4 border-amber-300/25 text-amber-100" href={`/premium/${match.match_id}`}>
+              <Link className="btn-secondary mt-4 border-cupGold/30 text-cupGold" href={`/premium/${match.match_id}`}>
                 <Eye size={17} />
                 Ver detalhes
               </Link>
+              </div>
             </article>
           );
         })}

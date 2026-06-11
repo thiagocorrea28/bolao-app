@@ -33,7 +33,7 @@ export default async function LeaderboardPage() {
   return (
     <AppShell profile={profile}>
       <section className="mb-6">
-        <p className="text-sm font-bold uppercase tracking-wide text-mint">Pontuacao geral</p>
+        <p className="text-sm font-bold uppercase tracking-wide text-cupGold">Ranking do torneio</p>
         <h1 className="mt-1 text-3xl font-black">Leaderboard</h1>
       </section>
 
@@ -46,8 +46,16 @@ export default async function LeaderboardPage() {
                 href={`/profile/${row.user_id}`}
                 key={row.user_id}
               >
-                <span className="grid h-10 w-10 place-items-center rounded-md bg-white/5 font-black">
-                  {index === 0 ? <Trophy size={20} className="text-mint" /> : <Medal size={19} />}
+                <span
+                  className={
+                    index === 0
+                      ? "grid h-11 w-11 place-items-center rounded-md border border-cupGold/30 bg-cupGold/20 font-black text-cupGold"
+                      : index < 3
+                        ? "grid h-11 w-11 place-items-center rounded-md border border-cupBlue/25 bg-cupBlue/10 font-black text-cupBlue"
+                        : "grid h-11 w-11 place-items-center rounded-md border border-line bg-white/5 font-black"
+                  }
+                >
+                  {index === 0 ? <Trophy size={20} /> : index < 3 ? <Medal size={19} /> : index + 1}
                 </span>
                 <span>
                   <strong className="block">{row.name}</strong>
@@ -55,7 +63,9 @@ export default async function LeaderboardPage() {
                     {row.exact_scores} placares exatos · {row.predictions_count} apostas
                   </span>
                 </span>
-                <span className="text-right text-2xl font-black">{row.total_points}</span>
+                <span className="rounded-md bg-grass/10 px-3 py-2 text-right text-2xl font-black text-mint">
+                  {row.total_points}
+                </span>
               </Link>
             ))}
           </div>

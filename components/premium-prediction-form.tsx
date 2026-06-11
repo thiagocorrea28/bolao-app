@@ -10,7 +10,7 @@ function SaveButton({ disabled, hasPrediction }: { disabled: boolean; hasPredict
   const { pending } = useFormStatus();
 
   return (
-    <button className="btn-primary bg-amber-300 text-pitch hover:bg-amber-200" disabled={disabled || pending}>
+    <button className="btn-primary bg-cupGold text-pitch hover:bg-yellow-200" disabled={disabled || pending}>
       <Save size={17} />
       {pending ? "Salvando" : hasPrediction ? "Atualizar premium" : "Apostar 2,00€"}
     </button>
@@ -49,11 +49,11 @@ export function PremiumPredictionForm({
         }}
       >
         <input name="match_id" type="hidden" value={match.match_id} />
-        <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2 rounded-lg border border-cupGold/20 bg-cupGold/5 p-3">
           <label className="grid gap-1 text-xs font-semibold text-ink/70">
             {match.home_team}
             <input
-              className="field text-center text-base font-black"
+              className="field text-center text-lg font-black"
               defaultValue={prediction?.home_score ?? ""}
               disabled={locked}
               inputMode="numeric"
@@ -63,11 +63,11 @@ export function PremiumPredictionForm({
               type="number"
             />
           </label>
-          <span className="pb-2 text-sm text-amber-100/70">x</span>
+          <span className="pb-2 text-sm font-black text-cupGold">x</span>
           <label className="grid gap-1 text-xs font-semibold text-ink/70">
             {match.away_team}
             <input
-              className="field text-center text-base font-black"
+              className="field text-center text-lg font-black"
               defaultValue={prediction?.away_score ?? ""}
               disabled={locked}
               inputMode="numeric"
