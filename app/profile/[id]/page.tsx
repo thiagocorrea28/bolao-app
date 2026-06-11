@@ -41,6 +41,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
     .eq("user_id", params.id)
     .order("created_at", { ascending: false })
     .returns<HistoryRow[]>();
+  const historyRows = history ?? [];
 
   return (
     <AppShell profile={viewer}>
@@ -53,7 +54,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
       </section>
 
       <div className="grid gap-3">
-        {history.map((item) => (
+        {historyRows.map((item) => (
           <article className="surface p-4" key={item.id}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -91,7 +92,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
           </article>
         ))}
 
-        {history.length === 0 ? (
+        {historyRows.length === 0 ? (
           <div className="surface p-8 text-center text-ink/70">Nenhuma aposta registrada.</div>
         ) : null}
       </div>

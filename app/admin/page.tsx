@@ -45,14 +45,16 @@ export default async function AdminPage() {
     .select("*")
     .order("starts_at", { ascending: true })
     .returns<Match[]>();
+  const matchRows = matches ?? [];
 
   const { data: premiumPredictions = [] } = await supabase
     .from("premium_predictions")
     .select("match_id")
     .eq("status", "active")
     .returns<Array<{ match_id: string }>>();
+  const premiumPredictionRows = premiumPredictions ?? [];
 
-  const premiumPredictionCounts = premiumPredictions.reduce<Record<string, number>>((acc, item) => {
+  const premiumPredictionCounts = premiumPredictionRows.reduce<Record<string, number>>((acc, item) => {
     acc[item.match_id] = (acc[item.match_id] || 0) + 1;
     return acc;
   }, {});
@@ -117,7 +119,7 @@ export default async function AdminPage() {
       </div>
 
       <section className="mt-6 grid gap-4">
-        {matches.map((match) => (
+        {matchRows.map((match) => (
           <article className="surface p-4" key={match.id}>
             {premiumPredictionCounts[match.id] ? (
               <div className="mb-3 rounded-md border border-amber-300/25 bg-amber-300/10 px-3 py-2 text-sm text-amber-50">

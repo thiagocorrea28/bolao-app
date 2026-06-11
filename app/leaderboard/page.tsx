@@ -28,6 +28,7 @@ export default async function LeaderboardPage() {
     .order("exact_scores", { ascending: false })
     .order("name", { ascending: true })
     .returns<LeaderboardRow[]>();
+  const leaderboardRows = rows ?? [];
 
   return (
     <AppShell profile={profile}>
@@ -37,9 +38,9 @@ export default async function LeaderboardPage() {
       </section>
 
       <div className="surface overflow-hidden">
-        {rows.length > 0 ? (
+        {leaderboardRows.length > 0 ? (
           <div className="divide-y divide-line">
-            {rows.map((row, index) => (
+            {leaderboardRows.map((row, index) => (
               <Link
                 className="grid grid-cols-[auto_1fr_auto] items-center gap-3 p-4 transition hover:bg-white/5"
                 href={`/profile/${row.user_id}`}

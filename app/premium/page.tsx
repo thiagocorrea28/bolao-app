@@ -77,8 +77,9 @@ export default async function PremiumPage() {
     .select("*")
     .order("starts_at", { ascending: true })
     .returns<PremiumMatchSummary[]>();
+  const summaryRows = summaries ?? [];
 
-  const matchIds = summaries.map((match) => match.match_id);
+  const matchIds = summaryRows.map((match) => match.match_id);
   const { data: predictions = [] } = matchIds.length
     ? await supabase
         .from("premium_predictions")
@@ -88,6 +89,7 @@ export default async function PremiumPage() {
         .in("match_id", matchIds)
         .returns<PremiumPrediction[]>()
     : { data: [] };
+  const predictionRows = predictions ?? [];
 
   const { data: balance } = await supabase
     .from("premium_balances")
@@ -103,9 +105,10 @@ export default async function PremiumPage() {
           .order("balance", { ascending: false })
           .returns<PremiumBalanceRow[]>()
       : { data: [] };
+  const balanceRows = balances ?? [];
 
-  const predictionsByMatch = new Map(predictions.map((prediction) => [prediction.match_id, prediction]));
-  const totalBalance = balances.reduce((total, row) => total + Number(row.balance), 0);
+  const predictionsByMatch = new Map(predictionRows.map((prediction) => [prediction.match_id, prediction]));
+  const totalBalance = balanceRows.reduce((total, row) => total + Number(row.balance), 0);
 
   return (
     <AppShell profile={profile}>
@@ -149,7 +152,7 @@ export default async function PremiumPage() {
               Saldos por jogador
             </div>
             <div className="divide-y divide-line">
-              {balances.map((row) => (
+              {balanceRows.map((row) => (
                 <div className="flex items-center justify-between gap-3 px-4 py-3" key={row.user_id}>
                   <span className="font-semibold">{row.name}</span>
                   <span className={Number(row.balance) >= 0 ? "font-black text-mint" : "font-black text-red-200"}>
@@ -163,7 +166,7 @@ export default async function PremiumPage() {
       ) : null}
 
       <section className="grid gap-4">
-        {summaries.map((match) => {
+        {summaryRows.map((match) => {
           const prediction = predictionsByMatch.get(match.match_id);
           const locked = !canPredict({ status: match.status, bid_closes_at: match.bid_closes_at });
           const playerResult =
@@ -260,7 +263,7 @@ export default async function PremiumPage() {
           );
         })}
 
-        {summaries.length === 0 ? (
+        {summaryRows.length === 0 ? (
           <div className="surface p-8 text-center text-ink/70">Nenhum jogo premium cadastrado.</div>
         ) : null}
       </section>

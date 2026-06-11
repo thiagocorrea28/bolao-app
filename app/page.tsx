@@ -43,8 +43,9 @@ export default async function HomePage({
     .lt("starts_at", end)
     .order("starts_at", { ascending: true })
     .returns<Match[]>();
+  const matchRows = matches ?? [];
 
-  const matchIds = matches.map((match) => match.id);
+  const matchIds = matchRows.map((match) => match.id);
   const { data: predictions = [] } = matchIds.length
     ? await supabase
         .from("predictions")
@@ -53,6 +54,7 @@ export default async function HomePage({
         .in("match_id", matchIds)
         .returns<Prediction[]>()
     : { data: [] };
+  const predictionRows = predictions ?? [];
 
   const { data: premiumEntry } = await supabase
     .from("premium_entries")
@@ -60,7 +62,7 @@ export default async function HomePage({
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const predictionsByMatch = new Map(predictions.map((prediction) => [prediction.match_id, prediction]));
+  const predictionsByMatch = new Map(predictionRows.map((prediction) => [prediction.match_id, prediction]));
   const isToday = dateValue === toDateInputValue(new Date());
 
   return (
@@ -86,9 +88,9 @@ export default async function HomePage({
         </div>
       </section>
 
-      {matches.length > 0 ? (
+      {matchRows.length > 0 ? (
         <div className="grid gap-4">
-          {matches.map((match) => (
+          {matchRows.map((match) => (
             <MatchCard
               date={dateValue}
               hasPremiumEntry={Boolean(premiumEntry)}

@@ -62,6 +62,7 @@ export default async function PremiumMatchDetailPage({ params }: { params: { id:
     .eq("status", "active")
     .order("created_at", { ascending: true })
     .returns<PremiumPredictionWithProfile[]>();
+  const predictionRows = predictions ?? [];
 
   const { data: ledger = [] } = await supabase
     .from("premium_ledger_entries")
@@ -69,8 +70,9 @@ export default async function PremiumMatchDetailPage({ params }: { params: { id:
     .eq("match_id", params.id)
     .order("created_at", { ascending: true })
     .returns<PremiumLedgerEntry[]>();
+  const ledgerRows = ledger ?? [];
 
-  const ledgerUserIds = Array.from(new Set(ledger.map((entry) => entry.user_id)));
+  const ledgerUserIds = Array.from(new Set(ledgerRows.map((entry) => entry.user_id)));
   const { data: ledgerProfiles = [] } = ledgerUserIds.length
     ? await supabase
         .from("profiles")
@@ -78,7 +80,8 @@ export default async function PremiumMatchDetailPage({ params }: { params: { id:
         .in("id", ledgerUserIds)
         .returns<Pick<Profile, "id" | "name">[]>()
     : { data: [] };
-  const ledgerProfileById = new Map(ledgerProfiles.map((item) => [item.id, item]));
+  const ledgerProfileRows = ledgerProfiles ?? [];
+  const ledgerProfileById = new Map(ledgerProfileRows.map((item) => [item.id, item]));
 
   const isWinner = (prediction: PremiumPrediction) =>
     summary.status === "finished" &&
@@ -130,7 +133,7 @@ export default async function PremiumMatchDetailPage({ params }: { params: { id:
             Apostas premium
           </div>
           <div className="divide-y divide-line">
-            {predictions.map((prediction) => (
+            {predictionRows.map((prediction) => (
               <div className="grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3" key={prediction.id}>
                 <div>
                   <p className="font-semibold">{prediction.profiles?.name ?? "Jogador"}</p>
@@ -147,7 +150,7 @@ export default async function PremiumMatchDetailPage({ params }: { params: { id:
               </div>
             ))}
 
-            {predictions.length === 0 ? (
+            {predictionRows.length === 0 ? (
               <div className="p-6 text-center text-ink/70">Nenhuma aposta premium neste jogo.</div>
             ) : null}
           </div>
@@ -158,7 +161,7 @@ export default async function PremiumMatchDetailPage({ params }: { params: { id:
             Lancamentos
           </div>
           <div className="divide-y divide-line">
-            {ledger.map((entry) => (
+            {ledgerRows.map((entry) => (
               <div className="flex items-center justify-between gap-3 px-4 py-3" key={entry.id}>
                 <div>
                   <p className="font-semibold">{ledgerProfileById.get(entry.user_id)?.name ?? "Jogador"}</p>
@@ -170,7 +173,7 @@ export default async function PremiumMatchDetailPage({ params }: { params: { id:
               </div>
             ))}
 
-            {ledger.length === 0 ? (
+            {ledgerRows.length === 0 ? (
               <div className="p-6 text-center text-ink/70">Sem lancamentos ainda.</div>
             ) : null}
           </div>
