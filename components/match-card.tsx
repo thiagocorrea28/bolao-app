@@ -52,6 +52,7 @@ export function MatchCard({
 
       {match.status !== "finished" ? (
         <PredictionForm
+          key={match.id}
           hasPremiumEntry={hasPremiumEntry}
           isPremiumMatch={match.is_premium}
           date={date}
