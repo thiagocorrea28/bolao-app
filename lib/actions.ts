@@ -71,11 +71,7 @@ export async function signUp(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect(
-    `/login?message=${encodeURIComponent(
-      "Cadastro realizado. Confira seu email para validar a conta."
-    )}`
-  );
+  redirect(`/login?message=${encodeURIComponent("Cadastro realizado. Faca login para continuar.")}`);
 }
 
 export async function signIn(formData: FormData) {

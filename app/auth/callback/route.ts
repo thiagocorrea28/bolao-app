@@ -12,6 +12,6 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.redirect(
-    `${requestUrl.origin}/login?message=${encodeURIComponent("Email validado, faca o login.")}`
+    `${requestUrl.origin}/login?message=${encodeURIComponent("Sessao atualizada. Faca login para continuar.")}`
   );
 }
