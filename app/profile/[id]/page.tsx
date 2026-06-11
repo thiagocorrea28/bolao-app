@@ -39,9 +39,10 @@ export default async function ProfilePage({ params }: { params: { id: string } }
     .from("predictions")
     .select("*, matches(*)")
     .eq("user_id", params.id)
-    .order("created_at", { ascending: false })
     .returns<HistoryRow[]>();
-  const historyRows = history ?? [];
+  const historyRows = (history ?? []).sort(
+    (a, b) => new Date(a.matches.starts_at).getTime() - new Date(b.matches.starts_at).getTime()
+  );
 
   return (
     <AppShell profile={viewer}>
