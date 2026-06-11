@@ -11,6 +11,29 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title,
   description,
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      {
+        url: "/img/icon.jpg",
+        sizes: "1000x1000",
+        type: "image/jpeg"
+      }
+    ],
+    shortcut: "/img/icon.jpg",
+    apple: [
+      {
+        url: "/img/icon.jpg",
+        sizes: "1000x1000",
+        type: "image/jpeg"
+      }
+    ]
+  },
+  appleWebApp: {
+    capable: true,
+    title: "BolãoApp",
+    statusBarStyle: "black-translucent"
+  },
   openGraph: {
     title,
     description,
