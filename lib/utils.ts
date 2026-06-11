@@ -7,6 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatDateLabel(date: Date) {
   return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "Europe/Lisbon",
     weekday: "long",
     day: "2-digit",
     month: "long"
@@ -15,6 +16,7 @@ export function formatDateLabel(date: Date) {
 
 export function formatKickoff(iso: string) {
   return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "Europe/Lisbon",
     day: "2-digit",
     month: "2-digit",
     hour: "2-digit",
@@ -57,9 +59,16 @@ export function formatEuro(value: number | string) {
 }
 
 export function toDateInputValue(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Lisbon",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const year = values.year;
+  const month = values.month;
+  const day = values.day;
   return `${year}-${month}-${day}`;
 }
 
@@ -71,16 +80,51 @@ export function addDays(date: Date, days: number) {
 
 export function dayBounds(dateValue?: string) {
   const date = dateValue ? new Date(`${dateValue}T00:00:00`) : new Date();
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
+  const dayValue = dateValue || toDateInputValue(date);
+  const start = portugalDateTimeToDate(`${dayValue}T00:00`);
+  const endDay = addDays(new Date(`${dayValue}T00:00:00`), 1);
+  const end = portugalDateTimeToDate(`${toDateInputValue(endDay)}T00:00`);
 
   return {
     date,
     start: start.toISOString(),
     end: end.toISOString()
   };
+}
+
+function timeZoneOffsetMs(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const asUtc = Date.UTC(
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+    Number(values.hour),
+    Number(values.minute),
+    Number(values.second)
+  );
+
+  return asUtc - date.getTime();
+}
+
+function portugalDateTimeToDate(value: string) {
+  const [datePart, timePart] = value.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+  const utcGuess = new Date(Date.UTC(year, month - 1, day, hour, minute));
+  const offset = timeZoneOffsetMs(utcGuess, "Europe/Lisbon");
+
+  return new Date(utcGuess.getTime() - offset);
 }
 
 export function canPredict(match: { status: string; bid_closes_at: string }) {

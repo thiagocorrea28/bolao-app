@@ -17,6 +17,51 @@ function formNumber(formData: FormData, key: string) {
   return value;
 }
 
+function timeZoneOffsetMs(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const asUtc = Date.UTC(
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+    Number(values.hour),
+    Number(values.minute),
+    Number(values.second)
+  );
+
+  return asUtc - date.getTime();
+}
+
+function portugalDateTimeToIso(value: string) {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+
+  if (!match) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      throw new Error("Data invalida.");
+    }
+    return date.toISOString();
+  }
+
+  const [, year, month, day, hour, minute] = match;
+  const utcGuess = new Date(
+    Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute))
+  );
+  const offset = timeZoneOffsetMs(utcGuess, "Europe/Lisbon");
+
+  return new Date(utcGuess.getTime() - offset).toISOString();
+}
+
 async function getProfile() {
   const supabase = createClient();
   const {
@@ -228,7 +273,7 @@ export async function createMatch(formData: FormData) {
   const { error } = await supabase.from("matches").insert({
     home_team: homeTeam,
     away_team: awayTeam,
-    starts_at: new Date(startsAt).toISOString(),
+    starts_at: portugalDateTimeToIso(startsAt),
     is_premium: isPremium
   });
 
@@ -254,7 +299,7 @@ export async function updateMatch(formData: FormData) {
     .update({
       home_team: homeTeam,
       away_team: awayTeam,
-      starts_at: new Date(startsAt).toISOString(),
+      starts_at: portugalDateTimeToIso(startsAt),
       is_premium: isPremium
     })
     .eq("id", id);

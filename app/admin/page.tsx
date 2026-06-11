@@ -14,10 +14,18 @@ import { createClient } from "@/lib/supabase/server";
 import type { Match, Profile } from "@/lib/types";
 
 function datetimeLocalValue(iso: string) {
-  const date = new Date(iso);
-  const offset = date.getTimezoneOffset();
-  const local = new Date(date.getTime() - offset * 60_000);
-  return local.toISOString().slice(0, 16);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Lisbon",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(new Date(iso));
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+
+  return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
 }
 
 export default async function AdminPage() {
