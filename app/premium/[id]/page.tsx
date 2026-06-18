@@ -121,9 +121,15 @@ export default async function PremiumMatchDetailPage({ params }: { params: { id:
         </div>
       </section>
 
-      {summary.is_refunded ? (
-        <div className="mb-6 surface border-amber-300/20 bg-amber-300/10 p-4 text-amber-50">
-          Pote devolvido: ninguem acertou o placar exato.
+      {summary.status === "finished" && summary.winners_count === 0 && summary.predictions_count > 0 ? (
+        <div className="mb-6 surface border-cupGold/25 bg-cupGold/10 p-4 text-cupGold">
+          Ninguem acertou o placar exato — pote de {formatEuro(summary.pot_amount)} acumulado para a proxima partida premium.
+        </div>
+      ) : null}
+
+      {summary.has_accumulated_pot ? (
+        <div className="mb-6 surface border-cupGold/25 bg-cupGold/10 p-4 text-amber-50">
+          Este pote inclui <strong>{formatEuro(summary.accumulated_pot)}</strong> acumulado de partidas anteriores.
         </div>
       ) : null}
 

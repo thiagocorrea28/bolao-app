@@ -333,6 +333,58 @@ export async function finishMatch(formData: FormData) {
     throw new Error(error.message);
   }
 
+  // For premium matches: if nobody guessed the exact score, accumulate the pot to the next premium match
+  const { data: match } = await supabase
+    .from("matches")
+    .select("is_premium, accumulated_pot")
+    .eq("id", id)
+    .single();
+
+  if (match?.is_premium) {
+    const { data: activePredictions } = await supabase
+      .from("premium_predictions")
+      .select("home_score, away_score, stake_amount")
+      .eq("match_id", id)
+      .eq("status", "active");
+
+    const predictions = activePredictions ?? [];
+    const hasWinner = predictions.some(
+      (p) => p.home_score === homeScore && p.away_score === awayScore
+    );
+
+    if (!hasWinner && predictions.length > 0) {
+      const potAmount =
+        predictions.reduce((sum, p) => sum + Number(p.stake_amount), 0) +
+        Number(match.accumulated_pot ?? 0);
+
+      const { data: nextMatch, error: nextMatchError } = await supabase
+        .from("matches")
+        .select("id, accumulated_pot")
+        .eq("is_premium", true)
+        .neq("id", id)
+        .in("status", ["open", "locked"])
+        .order("starts_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (nextMatchError) {
+        throw new Error(`Erro ao procurar proximo jogo: ${nextMatchError.message}`);
+      }
+
+      if (nextMatch) {
+        const newPot = Number(nextMatch.accumulated_pot ?? 0) + potAmount;
+        const { error: updateError } = await supabase
+          .from("matches")
+          .update({ accumulated_pot: newPot })
+          .eq("id", nextMatch.id);
+
+        if (updateError) {
+          throw new Error(`Erro ao acumular pote: ${updateError.message}`);
+        }
+      }
+    }
+  }
+
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/leaderboard");
@@ -376,6 +428,30 @@ export async function reopenMatch(formData: FormData) {
   revalidatePath("/leaderboard");
   revalidatePath("/premium");
   revalidatePath(`/premium/${id}`);
+}
+
+export async function getMatchPredictions(matchId: string) {
+  const supabase = createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return [];
+  }
+
+  const { data } = await supabase
+    .from("predictions")
+    .select("home_score, away_score, points, profiles(name)")
+    .eq("match_id", matchId)
+    .order("points", { ascending: false, nullsFirst: false });
+
+  return (data ?? []).map((row) => ({
+    home_score: row.home_score as number,
+    away_score: row.away_score as number,
+    points: row.points as number | null,
+    name: (row.profiles as unknown as { name: string } | null)?.name ?? "—"
+  }));
 }
 
 export async function deleteMatch(formData: FormData) {

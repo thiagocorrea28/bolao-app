@@ -2,6 +2,7 @@ import { CheckCircle2, Crown, Lock, Timer } from "lucide-react";
 import type { Match, Prediction } from "@/lib/types";
 import { formatBidCountdown, formatKickoff } from "@/lib/utils";
 import { PredictionForm } from "@/components/prediction-form";
+import { MatchPredictionsModal } from "@/components/match-predictions-modal";
 
 export function MatchCard({
   match,
@@ -82,6 +83,8 @@ export function MatchCard({
           prediction={prediction}
         />
       ) : null}
+
+      <MatchPredictionsModal matchId={match.id} matchFinished={match.status === "finished"} />
       </div>
     </article>
   );

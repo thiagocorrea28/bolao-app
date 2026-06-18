@@ -108,7 +108,9 @@ export default async function PremiumPage() {
   const balanceRows = balances ?? [];
 
   const predictionsByMatch = new Map(predictionRows.map((prediction) => [prediction.match_id, prediction]));
-  const totalBalance = balanceRows.reduce((total, row) => total + Number(row.balance), 0);
+  const totalPot = summaryRows
+    .filter((m) => m.status !== "finished")
+    .reduce((sum, m) => sum + Number(m.pot_amount), 0);
 
   return (
     <AppShell profile={profile}>
@@ -146,7 +148,7 @@ export default async function PremiumPage() {
 
       {profile.role === "super_admin" ? (
         <section className="mb-6 grid gap-4 lg:grid-cols-[18rem_1fr]">
-          <PremiumBalance label="Saldo total geral" value={totalBalance} />
+          <PremiumBalance label="Pote em jogo" value={totalPot} />
           <div className="surface overflow-hidden border-cupGold/20">
             <div className="border-b border-line px-4 py-3 text-sm font-bold uppercase tracking-wide text-cupGold/80">
               Saldos por jogador
@@ -169,10 +171,11 @@ export default async function PremiumPage() {
         {summaryRows.map((match) => {
           const prediction = predictionsByMatch.get(match.match_id);
           const locked = !canPredict({ status: match.status, bid_closes_at: match.bid_closes_at });
+          const noWinners = match.status === "finished" && match.winners_count === 0 && match.predictions_count > 0;
           const playerResult =
             prediction && match.status === "finished"
-              ? match.is_refunded
-                ? 0
+              ? noWinners
+                ? null
                 : prediction.home_score === match.home_score && prediction.away_score === match.away_score
                   ? Number(match.payout_per_winner) - Number(prediction.stake_amount)
                   : -Number(prediction.stake_amount)
@@ -189,8 +192,10 @@ export default async function PremiumPage() {
                     <span className="rounded bg-cupGold/10 px-2 py-1 text-cupGold">
                       {formatBidCountdown(match.bid_closes_at)}
                     </span>
-                    {match.is_refunded ? (
-                      <span className="rounded bg-white/5 px-2 py-1 text-ink/70">Pote devolvido</span>
+                    {match.has_accumulated_pot ? (
+                      <span className="rounded bg-cupGold/20 px-2 py-1 text-cupGold">
+                        Acumulado
+                      </span>
                     ) : null}
                   </div>
                   <h2 className="mt-2 text-xl font-black">
@@ -200,18 +205,12 @@ export default async function PremiumPage() {
 
                 <div className="grid gap-1 text-left sm:text-right">
                   <span className="text-xs font-bold uppercase tracking-wide text-ink/60">Pote</span>
-                  {match.is_refunded ? (
-                    <>
-                    <span className="text-2xl font-black text-cupGold/50 line-through decoration-red-300 decoration-2">
-                        {formatEuro(match.pot_amount)}
-                      </span>
-                      <span className="rounded-md border border-red-300/25 bg-red-500/10 px-2 py-1 text-xs font-black uppercase tracking-wide text-red-100">
-                        Pote cancelado
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-2xl font-black text-cupGold">{formatEuro(match.pot_amount)}</span>
-                  )}
+                  <span className="text-2xl font-black text-cupGold">{formatEuro(match.pot_amount)}</span>
+                  {match.has_accumulated_pot ? (
+                    <span className="text-xs text-cupGold/70">
+                      inclui {formatEuro(match.accumulated_pot)} acumulado
+                    </span>
+                  ) : null}
                   <span className="text-xs text-ink/60">
                     {match.predictions_count} apostas · {match.winners_count} vencedores
                   </span>
@@ -236,9 +235,11 @@ export default async function PremiumPage() {
                     <span className="rounded-md bg-mint/10 px-3 py-1 text-mint">
                       Premio por vencedor: {formatEuro(match.payout_per_winner)}
                     </span>
-                  ) : (
-                    <span className="rounded-md bg-white/5 px-3 py-1">Pote devolvido</span>
-                  )}
+                  ) : noWinners ? (
+                    <span className="rounded-md bg-cupGold/10 px-3 py-1 text-cupGold">
+                      Pote acumulado para o proximo jogo
+                    </span>
+                  ) : null}
                   {playerResult !== null ? (
                     <span
                       className={

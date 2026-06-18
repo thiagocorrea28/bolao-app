@@ -68,7 +68,7 @@ export type PremiumLedgerEntry = {
   id: string;
   user_id: string;
   match_id: string;
-  type: "stake" | "payout" | "refund";
+  type: "stake" | "payout" | "refund" | "accumulated";
   amount: number;
   description: string;
   created_at: string;
@@ -88,4 +88,6 @@ export type PremiumMatchSummary = {
   winners_count: number;
   is_refunded: boolean;
   payout_per_winner: number;
+  accumulated_pot: number;
+  has_accumulated_pot: boolean;
 };
