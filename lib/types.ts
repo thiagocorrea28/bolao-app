@@ -14,6 +14,9 @@ export type Match = {
   bid_closes_at: string;
   status: "open" | "locked" | "finished";
   is_premium: boolean;
+  is_knockout: boolean;
+  knockout_phase: string | null;
+  winner: "home" | "away" | null;
   home_score: number | null;
   away_score: number | null;
   created_at: string;
@@ -28,6 +31,7 @@ export type Prediction = {
   away_score: number;
   points: number;
   is_exact_score: boolean;
+  predicted_winner: "home" | "away" | null;
   created_at: string;
   updated_at: string;
 };
