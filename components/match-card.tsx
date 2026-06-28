@@ -40,9 +40,15 @@ export function MatchCard({
           </div>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
             <h2 className="text-2xl font-black">{match.home_team}</h2>
-            <span className="hidden w-12 shrink-0 justify-center rounded-md border border-line bg-white/5 px-3 py-1 text-sm font-black text-ink/50 sm:inline-flex">
-              VS
-            </span>
+            {match.status === "finished" && match.home_score !== null && match.away_score !== null ? (
+              <span className="hidden w-16 shrink-0 justify-center rounded-md border border-mint/30 bg-mint/10 px-3 py-1 text-sm font-black text-mint sm:inline-flex">
+                {match.home_score} – {match.away_score}
+              </span>
+            ) : (
+              <span className="hidden w-12 shrink-0 justify-center rounded-md border border-line bg-white/5 px-3 py-1 text-sm font-black text-ink/50 sm:inline-flex">
+                VS
+              </span>
+            )}
             <h2 className="text-2xl font-black">{match.away_team}</h2>
           </div>
         </div>
