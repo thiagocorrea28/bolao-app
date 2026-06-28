@@ -41,7 +41,7 @@ export function MatchCard({
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
             <h2 className="text-2xl font-black">{match.home_team}</h2>
             {match.status === "finished" && match.home_score !== null && match.away_score !== null ? (
-              <span className="hidden w-16 shrink-0 justify-center rounded-md border border-mint/30 bg-mint/10 px-3 py-1 text-sm font-black text-mint sm:inline-flex">
+              <span className="inline-flex w-16 shrink-0 justify-center rounded-md border border-mint/30 bg-mint/10 px-3 py-1 text-sm font-black text-mint sm:inline-flex">
                 {match.home_score} – {match.away_score}
               </span>
             ) : (
