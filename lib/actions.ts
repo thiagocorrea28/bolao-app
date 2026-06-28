@@ -146,13 +146,17 @@ export async function savePrediction(formData: FormData) {
   const homeScore = formNumber(formData, "home_score");
   const awayScore = formNumber(formData, "away_score");
   const useForPremium = formData.get("use_for_premium") === "on";
+  const predictedWinnerRaw = formString(formData, "predicted_winner");
+  const predictedWinner =
+    predictedWinnerRaw === "home" || predictedWinnerRaw === "away" ? predictedWinnerRaw : null;
 
   const { error } = await supabase.from("predictions").upsert(
     {
       user_id: user.id,
       match_id: matchId,
       home_score: homeScore,
-      away_score: awayScore
+      away_score: awayScore,
+      predicted_winner: predictedWinner
     },
     { onConflict: "user_id,match_id" }
   );
@@ -270,11 +274,16 @@ export async function createMatch(formData: FormData) {
     throw new Error("Preencha os dados do jogo.");
   }
 
+  const isKnockout = formData.get("is_knockout") === "on";
+  const knockoutPhase = formString(formData, "knockout_phase") || null;
+
   const { error } = await supabase.from("matches").insert({
     home_team: homeTeam,
     away_team: awayTeam,
     starts_at: portugalDateTimeToIso(startsAt),
-    is_premium: isPremium
+    is_premium: isPremium,
+    is_knockout: isKnockout,
+    knockout_phase: isKnockout ? knockoutPhase : null
   });
 
   if (error) {
@@ -294,13 +303,18 @@ export async function updateMatch(formData: FormData) {
   const startsAt = formString(formData, "starts_at");
   const isPremium = formData.get("is_premium") === "on";
 
+  const isKnockout = formData.get("is_knockout") === "on";
+  const knockoutPhase = formString(formData, "knockout_phase") || null;
+
   const { error } = await supabase
     .from("matches")
     .update({
       home_team: homeTeam,
       away_team: awayTeam,
       starts_at: portugalDateTimeToIso(startsAt),
-      is_premium: isPremium
+      is_premium: isPremium,
+      is_knockout: isKnockout,
+      knockout_phase: isKnockout ? knockoutPhase : null
     })
     .eq("id", id);
 
@@ -319,12 +333,15 @@ export async function finishMatch(formData: FormData) {
   const id = formString(formData, "id");
   const homeScore = formNumber(formData, "home_score");
   const awayScore = formNumber(formData, "away_score");
+  const winnerRaw = formString(formData, "winner");
+  const winner = winnerRaw === "home" || winnerRaw === "away" ? winnerRaw : null;
 
   const { error } = await supabase
     .from("matches")
     .update({
       home_score: homeScore,
       away_score: awayScore,
+      winner: homeScore === awayScore ? winner : null,
       status: "finished"
     })
     .eq("id", id);
@@ -607,4 +624,18 @@ export async function importMatchesCsv(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin");
+}
+
+export async function recalculateAccumulatedPot() {
+  const { supabase } = await requireAdmin();
+
+  const { error } = await supabase.rpc("recalculate_premium_pot");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/premium");
 }

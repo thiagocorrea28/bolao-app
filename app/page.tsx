@@ -10,7 +10,7 @@ import { addDays, dayBounds, formatDateLabel, toDateInputValue } from "@/lib/uti
 export default async function HomePage({
   searchParams
 }: {
-  searchParams: { date?: string };
+  searchParams: { date?: string; only_open?: string };
 }) {
   const supabase = createClient();
   const {
@@ -64,6 +64,10 @@ export default async function HomePage({
 
   const predictionsByMatch = new Map(predictionRows.map((prediction) => [prediction.match_id, prediction]));
   const isToday = dateValue === toDateInputValue(new Date());
+  const onlyOpen = searchParams.only_open === "1";
+  const visibleMatches = onlyOpen
+    ? matchRows.filter((m) => m.status !== "finished" && new Date(m.bid_closes_at).getTime() > Date.now())
+    : matchRows;
 
   return (
     <AppShell profile={profile}>
@@ -75,22 +79,39 @@ export default async function HomePage({
           <h1 className="mt-1 text-3xl font-black capitalize">{formatDateLabel(date)}</h1>
         </div>
 
-        <div className="grid grid-cols-[auto_1fr_auto] gap-2 sm:w-auto">
-          <Link className="btn-secondary px-3" href={`/?date=${previousDate}`} title="Dia anterior">
-            <ChevronLeft size={18} />
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            className={`btn-secondary text-sm ${onlyOpen ? "border-mint/40 bg-mint/10 text-mint" : ""}`}
+            href={onlyOpen ? `/?date=${dateValue}` : `/?date=${dateValue}&only_open=1`}
+          >
+            Jogos Em aberto
           </Link>
-          <Link className="btn-secondary" href="/">
-            Hoje
-          </Link>
-          <Link className="btn-secondary px-3" href={`/?date=${nextDate}`} title="Proximo dia">
-            <ChevronRight size={18} />
-          </Link>
+          <div className="grid grid-cols-[auto_1fr_auto] gap-2">
+            <Link className="btn-secondary px-3" href={`/?date=${previousDate}`} title="Dia anterior">
+              <ChevronLeft size={18} />
+            </Link>
+            <Link className="btn-secondary" href="/">
+              Hoje
+            </Link>
+            <Link className="btn-secondary px-3" href={`/?date=${nextDate}`} title="Proximo dia">
+              <ChevronRight size={18} />
+            </Link>
+          </div>
         </div>
       </section>
 
-      {matchRows.length > 0 ? (
+      {matchRows.length === 0 ? (
+        <div className="surface p-8 text-center">
+          <h2 className="text-xl font-black">Nenhum jogo cadastrado para este dia</h2>
+          {profile.role === "super_admin" ? (
+            <Link className="btn-primary mt-4" href="/admin">
+              Cadastrar jogos
+            </Link>
+          ) : null}
+        </div>
+      ) : (
         <div className="grid gap-4">
-          {matchRows.map((match) => (
+          {visibleMatches.map((match) => (
             <MatchCard
               date={dateValue}
               hasPremiumEntry={Boolean(premiumEntry)}
@@ -99,15 +120,6 @@ export default async function HomePage({
               prediction={predictionsByMatch.get(match.id)}
             />
           ))}
-        </div>
-      ) : (
-        <div className="surface p-8 text-center">
-          <h2 className="text-xl font-black">Nenhum jogo cadastrado para este dia</h2>
-          {profile.role === "super_admin" ? (
-            <Link className="btn-primary mt-4" href="/admin">
-              Cadastrar jogos
-            </Link>
-          ) : null}
         </div>
       )}
     </AppShell>

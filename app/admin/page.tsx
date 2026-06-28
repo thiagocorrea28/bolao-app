@@ -2,11 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CalendarPlus, ChevronLeft, ChevronRight, FileUp, RotateCcw, Trash2 } from "lucide-react";
 import { AdminCollapsibleSection } from "@/components/admin-collapsible-section";
+import { AdminFinishForm } from "@/components/admin-finish-form";
 import { AppShell } from "@/components/app-shell";
+import { RecalculatePotButton } from "@/components/recalculate-pot-button";
 import {
   createMatch,
   deleteMatch,
-  finishMatch,
   importMatchesCsv,
   reopenMatch,
   updateMatch
@@ -89,16 +90,19 @@ export default async function AdminPage({
           <p className="mt-1 text-sm capitalize text-ink/70">{formatDateLabel(date)}</p>
         </div>
 
-        <div className="grid grid-cols-[auto_1fr_auto] gap-2 sm:w-auto">
-          <Link className="btn-secondary px-3" href={`/admin?date=${previousDate}`} title="Dia anterior">
-            <ChevronLeft size={18} />
-          </Link>
-          <Link className="btn-secondary" href="/admin">
-            Hoje
-          </Link>
-          <Link className="btn-secondary px-3" href={`/admin?date=${nextDate}`} title="Proximo dia">
-            <ChevronRight size={18} />
-          </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <RecalculatePotButton />
+          <div className="grid grid-cols-[auto_1fr_auto] gap-2">
+            <Link className="btn-secondary px-3" href={`/admin?date=${previousDate}`} title="Dia anterior">
+              <ChevronLeft size={18} />
+            </Link>
+            <Link className="btn-secondary" href="/admin">
+              Hoje
+            </Link>
+            <Link className="btn-secondary px-3" href={`/admin?date=${nextDate}`} title="Proximo dia">
+              <ChevronRight size={18} />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -120,9 +124,24 @@ export default async function AdminPage({
               Data e hora
               <input className="field" name="starts_at" required type="datetime-local" />
             </label>
+            <label className="grid gap-2 text-sm font-semibold">
+              Fase eliminatória
+              <select className="field" name="knockout_phase">
+                <option value="">— Nenhuma (fase de grupos) —</option>
+                <option value="16-avos de final">16-avos de final</option>
+                <option value="Oitavas de final">Oitavas de final</option>
+                <option value="Quartas de final">Quartas de final</option>
+                <option value="Semi-final">Semi-final</option>
+                <option value="Final">Final</option>
+              </select>
+            </label>
             <label className="flex items-center gap-3 rounded-md border border-line bg-black/20 px-3 py-2 text-sm font-semibold">
               <input className="h-4 w-4 accent-grass" name="is_premium" type="checkbox" />
               Jogo premium
+            </label>
+            <label className="flex items-center gap-3 rounded-md border border-line bg-black/20 px-3 py-2 text-sm font-semibold">
+              <input className="h-4 w-4 accent-cupRed" name="is_knockout" type="checkbox" />
+              Fase eliminatória
             </label>
             <button className="btn-primary sm:col-span-2">Cadastrar jogo</button>
           </form>
@@ -162,7 +181,7 @@ export default async function AdminPage({
                 {premiumPredictionCounts[match.id]} apostas premium ativas. Este jogo nao pode ser apagado nem deixar de ser premium.
               </div>
             ) : null}
-            <form action={updateMatch} className="grid gap-3 lg:grid-cols-[1fr_1fr_15rem_8rem_auto]">
+            <form action={updateMatch} className="grid gap-3 lg:grid-cols-[1fr_1fr_15rem_auto_auto_auto]">
               <input name="id" type="hidden" value={match.id} />
               <label className="grid gap-2 text-sm font-semibold">
                 Casa
@@ -204,6 +223,26 @@ export default async function AdminPage({
                 )}
                 Premium
               </label>
+              <label className="grid gap-2 text-sm font-semibold">
+                Fase
+                <select className="field" name="knockout_phase" defaultValue={match.knockout_phase ?? ""}>
+                  <option value="">— Grupos —</option>
+                  <option value="16-avos de final">16-avos de final</option>
+                  <option value="Oitavas de final">Oitavas de final</option>
+                  <option value="Quartas de final">Quartas de final</option>
+                  <option value="Semi-final">Semi-final</option>
+                  <option value="Final">Final</option>
+                </select>
+              </label>
+              <label className="flex items-center gap-2 self-end rounded-md border border-line bg-black/20 px-3 py-2 text-sm font-semibold">
+                <input
+                  className="h-4 w-4 accent-cupRed"
+                  name="is_knockout"
+                  type="checkbox"
+                  defaultChecked={match.is_knockout}
+                />
+                Eliminatória
+              </label>
               <button className="btn-secondary self-end">Salvar</button>
             </form>
 
@@ -226,33 +265,7 @@ export default async function AdminPage({
                   </button>
                 </form>
               ) : (
-                <form action={finishMatch} className="grid grid-cols-[1fr_auto_1fr_auto] items-end gap-2">
-                  <input name="id" type="hidden" value={match.id} />
-                  <label className="grid gap-1 text-xs font-semibold text-ink/70">
-                    {match.home_team}
-                    <input
-                      className="field text-center"
-                      defaultValue={match.home_score ?? ""}
-                      min={0}
-                      name="home_score"
-                      required
-                      type="number"
-                    />
-                  </label>
-                  <span className="pb-2 text-ink/50">x</span>
-                  <label className="grid gap-1 text-xs font-semibold text-ink/70">
-                    {match.away_team}
-                    <input
-                      className="field text-center"
-                      defaultValue={match.away_score ?? ""}
-                      min={0}
-                      name="away_score"
-                      required
-                      type="number"
-                    />
-                  </label>
-                  <button className="btn-primary">Finalizar</button>
-                </form>
+                <AdminFinishForm match={match} />
               )}
 
               <div className="flex flex-wrap gap-2 md:justify-self-end">
