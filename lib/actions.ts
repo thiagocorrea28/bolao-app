@@ -459,7 +459,7 @@ export async function getMatchPredictions(matchId: string) {
 
   const { data } = await supabase
     .from("predictions")
-    .select("home_score, away_score, points, profiles(name)")
+    .select("home_score, away_score, points, predicted_winner, profiles(name)")
     .eq("match_id", matchId)
     .order("points", { ascending: false, nullsFirst: false });
 
@@ -467,6 +467,7 @@ export async function getMatchPredictions(matchId: string) {
     home_score: row.home_score as number,
     away_score: row.away_score as number,
     points: row.points as number | null,
+    predicted_winner: (row.predicted_winner ?? null) as "home" | "away" | null,
     name: (row.profiles as unknown as { name: string } | null)?.name ?? "—"
   }));
 }

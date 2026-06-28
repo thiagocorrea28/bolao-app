@@ -114,7 +114,13 @@ export function MatchCard({
           />
         ) : null}
 
-        <MatchPredictionsModal matchId={match.id} matchFinished={match.status === "finished"} />
+        <MatchPredictionsModal
+          matchId={match.id}
+          matchFinished={match.status === "finished"}
+          homeTeam={match.home_team}
+          awayTeam={match.away_team}
+          isKnockout={match.is_knockout}
+        />
       </div>
     </article>
   );

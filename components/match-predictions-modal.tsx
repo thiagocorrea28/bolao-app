@@ -1,22 +1,29 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Users, X } from "lucide-react";
+import { Trophy, Users, X } from "lucide-react";
 import { getMatchPredictions } from "@/lib/actions";
 
 type Prediction = {
   home_score: number;
   away_score: number;
   points: number | null;
+  predicted_winner: "home" | "away" | null;
   name: string;
 };
 
 export function MatchPredictionsModal({
   matchId,
-  matchFinished
+  matchFinished,
+  homeTeam,
+  awayTeam,
+  isKnockout
 }: {
   matchId: string;
   matchFinished: boolean;
+  homeTeam: string;
+  awayTeam: string;
+  isKnockout: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
@@ -63,24 +70,41 @@ export function MatchPredictionsModal({
               <p className="py-6 text-center text-sm text-ink/50">Nenhuma aposta registada.</p>
             ) : (
               <ul className="max-h-80 overflow-y-auto">
-                {predictions.map((p, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center justify-between border-b border-line py-2 last:border-0"
-                  >
-                    <span className="text-sm font-semibold">{p.name}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="rounded-md border border-line bg-white/5 px-2 py-0.5 text-sm font-black tabular-nums">
-                        {p.home_score} x {p.away_score}
-                      </span>
-                      {matchFinished && p.points != null ? (
-                        <span className="w-14 text-right text-sm font-bold text-mint">
-                          +{p.points} pts
-                        </span>
+                {predictions.map((p, i) => {
+                  const advancingTeam =
+                    isKnockout && p.predicted_winner
+                      ? p.predicted_winner === "home"
+                        ? homeTeam
+                        : awayTeam
+                      : null;
+
+                  return (
+                    <li
+                      key={i}
+                      className="border-b border-line py-2.5 last:border-0"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold">{p.name}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="rounded-md border border-line bg-white/5 px-2 py-0.5 text-sm font-black tabular-nums">
+                            {p.home_score} x {p.away_score}
+                          </span>
+                          {matchFinished && p.points != null ? (
+                            <span className="w-14 text-right text-sm font-bold text-mint">
+                              +{p.points} pts
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                      {advancingTeam ? (
+                        <p className="mt-0.5 flex items-center gap-1 text-xs text-cupGold/80">
+                          <Trophy size={11} />
+                          avança {advancingTeam}
+                        </p>
                       ) : null}
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
